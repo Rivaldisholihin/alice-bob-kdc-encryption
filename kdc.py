@@ -2,29 +2,16 @@ import os
 import json
 import socket
 import secrets
-import base64
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from aes_manual import AES128Manual
 
 HOST = os.getenv("KDC_HOST", "0.0.0.0")
 PORT = int(os.getenv("KDC_PORT", "5000"))
 
-def key_from_env(name):
-    value = os.getenv(name)
-    if not value:
-        raise RuntimeError(f"Environment variable {name} belum diatur.")
-    try:
-        key = bytes.fromhex(value)
-    except ValueError as exc:
-        raise RuntimeError(f"{name} harus berupa 64 karakter heksadesimal.") from exc
-    if len(key) != 32:
-        raise RuntimeError(f"{name} harus berisi kunci 32 byte (64 karakter heksadesimal).")
-    return key
+ALICE_MASTER_KEY = b"AliceMasterKey12" # 16-byte ASCII
+BOB_MASTER_KEY   = b"BobMasterKey1234" # 16-byte ASCII
 
-def encrypt_json(key, data):
-    nonce = os.urandom(12)
-    plaintext = json.dumps(data).encode("utf-8")
-    ciphertext = AESGCM(key).encrypt(nonce, plaintext, None)
-    return {"nonce": base64.b64encode(nonce).decode(), "ciphertext": base64.b64encode(ciphertext).decode()}
+def send_json(conn, data):
+    conn.sendall(json.dumps(data).encode("utf-8") + b"\n")
 
 def recv_json(conn):
     data = bytearray()
@@ -33,53 +20,55 @@ def recv_json(conn):
         if not chunk:
             break
         data.extend(chunk)
-        if len(data) > 1_000_000:
-            raise ValueError("Permintaan terlalu besar.")
-    if not data:
-        raise ValueError("Permintaan kosong.")
     return json.loads(data.decode("utf-8"))
 
-def send_json(conn, data):
-    conn.sendall(json.dumps(data).encode("utf-8") + b"\n")
-
-def handle(conn, address, alice_key, bob_key):
+def handle_client(conn, address):
+    global ALICE_MASTER_KEY, BOB_MASTER_KEY
     with conn:
         try:
-            request = recv_json(conn)
-            if request.get("type") != "REQUEST_SESSION_KEY" or request.get("from") != "Alice":
-                send_json(conn, {"status": "error", "message": "Permintaan tidak valid."})
+            req = recv_json(conn)
+            if req.get("type") == "CHANGE_KEYS":
+                ALICE_MASTER_KEY = req["alice_key"].encode('utf-8')[:16]
+                BOB_MASTER_KEY = req["bob_key"].encode('utf-8')[:16]
+                send_json(conn, {"status": "ok", "msg": "Master Keys Updated!"})
+                print("[KDC] Master Keys berhasil diubah via menu interaktif.")
                 return
 
-            session_key = AESGCM.generate_key(bit_length=256)
-            ticket_for_bob = encrypt_json(bob_key, {
-                "from": "Alice",
-                "to": "Bob",
-                "session_key": base64.b64encode(session_key).decode()
-            })
-            response_for_alice = encrypt_json(alice_key, {
-                "session_key": base64.b64encode(session_key).decode(),
-                "ticket_for_bob": ticket_for_bob
-            })
-            send_json(conn, {"status": "ok", "wrapped": response_for_alice})
-            print(f"[KDC] Session key dibuat dan dikirim kepada Alice; tiket Bob disertakan. Klien: {address}")
-        except Exception as exc:
-            try:
-                send_json(conn, {"status": "error", "message": str(exc)})
-            except Exception:
-                pass
-            print(f"[KDC] Permintaan gagal dari {address}: {exc}")
+            if req.get("type") == "REQUEST_SESSION_KEY":
+                sender = req["from"]
+                target = req["to"]
+                
+                # Buat Session Key acak (16 Byte) & IV (16 Byte)
+                session_key = secrets.token_bytes(16)
+                iv = secrets.token_bytes(16)
+
+                aes_bob = AES128Manual(BOB_MASTER_KEY)
+                ticket_payload = f"{sender}|{target}|{session_key.hex()}|{iv.hex()}"
+                ticket_for_bob = aes_bob.encrypt_cbc(ticket_payload, iv)
+
+                aes_alice = AES128Manual(ALICE_MASTER_KEY)
+                alice_payload = f"{session_key.hex()}|{iv.hex()}|{ticket_for_bob}"
+                wrapped_response = aes_alice.encrypt_cbc(alice_payload, iv)
+
+                send_json(conn, {
+                    "status": "ok",
+                    "iv_hex": iv.hex(),
+                    "wrapped": wrapped_response
+                })
+                print(f"[KDC] Session key dibuat untuk {sender} -> {target}")
+
+        except Exception as e:
+            print(f"[KDC] Error: {e}")
 
 def main():
-    alice_key = key_from_env("ALICE_MASTER_KEY")
-    bob_key = key_from_env("BOB_MASTER_KEY")
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server.bind((HOST, PORT))
         server.listen()
-        print(f"[KDC] Berjalan pada {HOST}:{PORT}")
+        print(f"[KDC Server Ready] Berjalan pada {HOST}:{PORT}")
         while True:
-            conn, address = server.accept()
-            handle(conn, address, alice_key, bob_key)
+            conn, addr = server.accept()
+            handle_client(conn, addr)
 
 if __name__ == "__main__":
     main()
