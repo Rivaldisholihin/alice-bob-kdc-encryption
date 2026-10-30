@@ -1,76 +1,76 @@
-# AES-128 Key Distribution Center (KDC)
+# Implementasi AES-128 dan Key Distribution Center (KDC)
 
-## 1. Project Description
+## 1. Deskripsi Proyek
 
-This project implements a symmetric cryptographic communication system using **AES-128 (Advanced Encryption Standard)** and a **Key Distribution Center (KDC)**.
+Proyek ini merupakan implementasi sistem komunikasi menggunakan algoritma kriptografi simetris **AES-128 (Advanced Encryption Standard)** dengan bantuan **Key Distribution Center (KDC)**.
 
-The system enables two clients, Alice and Bob, to exchange encrypted messages securely with the assistance of a trusted third party (KDC).
+Sistem ini memungkinkan dua pihak, yaitu Alice dan Bob, untuk bertukar pesan terenkripsi dengan bantuan KDC sebagai pihak ketiga yang dipercaya (*Trusted Third Party*).
 
-The KDC generates a random Session Key and distributes it to Alice and Bob using their respective Master Keys. After obtaining the same Session Key, Alice and Bob can communicate using AES-128 encryption.
+KDC bertugas menghasilkan Session Key secara acak dan mendistribusikannya kepada Alice dan Bob menggunakan Master Key masing-masing. Setelah memperoleh Session Key yang sama, Alice dan Bob dapat melakukan komunikasi menggunakan algoritma AES-128.
 
-This implementation uses the **Cipher Block Chaining (CBC)** mode of operation and a manually implemented AES-128 algorithm.
+Implementasi ini menggunakan mode operasi **Cipher Block Chaining (CBC)** dengan algoritma AES-128 yang dibuat secara manual menggunakan bahasa pemrograman Python.
 
-## 2. Project Objectives
+## 2. Tujuan Proyek
 
-- Implement AES-128 encryption and decryption manually.
-- Understand AES key expansion and its encryption rounds.
-- Implement the Cipher Block Chaining (CBC) mode.
-- Build a Key Distribution Center for Session Key generation and distribution.
-- Establish secure communication between Alice and Bob.
-- Demonstrate communication using three different IP addresses.
-- Understand the role of Master Keys and Session Keys in symmetric cryptography.
+- Mengimplementasikan algoritma enkripsi dan dekripsi AES-128 secara manual.
+- Memahami proses Key Expansion pada algoritma AES.
+- Mengimplementasikan mode operasi Cipher Block Chaining (CBC).
+- Membangun Key Distribution Center untuk menghasilkan dan mendistribusikan Session Key.
+- Membangun komunikasi terenkripsi antara Alice dan Bob.
+- Mendemonstrasikan komunikasi menggunakan tiga alamat IP yang berbeda.
+- Memahami fungsi Master Key dan Session Key dalam kriptografi simetris.
 
-## 3. System Architecture
+## 3. Arsitektur Sistem
 
-The system consists of three main entities:
+Sistem ini terdiri dari tiga entitas utama:
 
-| Entity | Role | Default Port |
+| Entitas | Fungsi | Port Default |
 |---|---|---|
-| KDC | Generates and distributes Session Keys | 5000 |
-| Alice | Client that sends and receives encrypted messages | 5001 |
-| Bob | Client that sends and receives encrypted messages | 5002 |
+| KDC | Menghasilkan dan mendistribusikan Session Key | 5000 |
+| Alice | Mengirim dan menerima pesan terenkripsi | 5001 |
+| Bob | Mengirim dan menerima pesan terenkripsi | 5002 |
 
-### Communication Architecture
+### Diagram Arsitektur Komunikasi
 
 ```text
-             +----------------+
-             |      KDC       |
-             |  Port: 5000    |
-             |                |
-             | Session Key    |
-             | Generation     |
-             +----------------+
-                 /        \
-                /          \
-       Master Key          Master Key
-              /              \
-             /                \
-    +---------------+   +---------------+
-    |     ALICE     |   |      BOB      |
-    |   Port: 5001  |   |   Port: 5002  |
-    +---------------+   +---------------+
-             \                 /
-              \               /
-               Encrypted Message
-                 AES-128 CBC
+              +----------------+
+              |      KDC       |
+              |   Port: 5000   |
+              |                |
+              | Session Key    |
+              | Generation     |
+              +----------------+
+                  /       \
+                 /         \
+          Master Key    Master Key
+               /             \
+              /               \
+     +---------------+  +---------------+
+     |     ALICE     |  |      BOB      |
+     |   Port: 5001  |  |   Port: 5002  |
+     +---------------+  +---------------+
+              \              /
+               \            /
+                Komunikasi
+               AES-128 CBC
 ```
 
-Each entity can act as a sender or receiver.
+Setiap entitas dapat berperan sebagai pengirim maupun penerima pesan.
 
-Supported communication:
+Arah komunikasi yang didukung:
 - Alice → Bob
 - Bob → Alice
 
-## 4. Cryptographic Implementation
+## 4. Implementasi Kriptografi
 
-### 4.1 AES-128
+### 4.1 Advanced Encryption Standard (AES-128)
 
-AES-128 is a symmetric block cipher that uses:
-- Block size: 128 bits (16 bytes).
-- Key size: 128 bits (16 bytes).
-- Number of rounds: 10.
+AES-128 merupakan algoritma kriptografi simetris berbasis blok yang menggunakan:
+- Ukuran blok: 128 bit (16 byte).
+- Panjang kunci: 128 bit (16 byte).
+- Jumlah putaran: 10 ronde.
 
-The implementation includes the following AES operations:
+Implementasi AES-128 dalam proyek ini mencakup beberapa tahapan:
 
 1. SubBytes
 2. ShiftRows
@@ -78,17 +78,17 @@ The implementation includes the following AES operations:
 4. AddRoundKey
 5. Key Expansion
 
-The final encryption round does not include MixColumns.
+Pada ronde terakhir, proses MixColumns tidak dilakukan.
 
 ### 4.2 Cipher Block Chaining (CBC)
 
-CBC is the block cipher operation mode used in this project.
+Cipher Block Chaining (CBC) merupakan mode operasi yang digunakan untuk mengenkripsi data menggunakan algoritma AES.
 
-During encryption, each plaintext block is XORed with the previous ciphertext block before being encrypted.
+Pada proses enkripsi, setiap blok plaintext akan di-XOR dengan blok ciphertext sebelumnya sebelum dienkripsi.
 
-The first block uses an Initialization Vector (IV).
+Blok pertama menggunakan Initialization Vector (IV).
 
-Encryption formula:
+Rumus enkripsi:
 
 ```text
 C1 = AES(K, P1 XOR IV)
@@ -96,45 +96,47 @@ C1 = AES(K, P1 XOR IV)
 C2 = AES(K, P2 XOR C1)
 ```
 
-Where:
-- K = Encryption Key
-- P = Plaintext
-- C = Ciphertext
-- IV = Initialization Vector
+Keterangan:
+- K = Kunci enkripsi.
+- P = Plaintext.
+- C = Ciphertext.
+- IV = Initialization Vector.
 
-The implementation also uses PKCS7 padding to ensure that plaintext data fits the AES block size.
+Implementasi ini juga menggunakan PKCS7 Padding untuk memastikan panjang plaintext sesuai dengan ukuran blok AES, yaitu 16 byte.
 
-### 4.3 Key Distribution
+### 4.3 Distribusi Kunci
 
-The system uses two types of cryptographic keys:
+Sistem menggunakan dua jenis kunci kriptografi:
 
 **Master Key**
-- Alice and KDC share Alice's Master Key.
-- Bob and KDC share Bob's Master Key.
-- Used to protect the Session Key distribution.
+- Alice dan KDC memiliki Master Key yang sama.
+- Bob dan KDC memiliki Master Key yang sama.
+- Digunakan untuk melindungi proses distribusi Session Key.
 
 **Session Key**
-- Generated randomly by KDC.
-- Used by Alice and Bob for message encryption and decryption.
-- Has a length of 128 bits (16 bytes).
+- Dibuat secara acak oleh KDC.
+- Digunakan Alice dan Bob untuk mengenkripsi serta mendekripsi pesan.
+- Memiliki panjang 128 bit (16 byte).
 
-## 5. Key Distribution Process
+## 5. Proses Distribusi Session Key
 
-The communication process follows these steps:
+Proses komunikasi mengikuti tahapan berikut:
 
-1. Alice requests a Session Key from KDC for communication with Bob.
-2. KDC generates a random Session Key and IV.
-3. KDC encrypts a ticket containing the sender, recipient, Session Key, and IV using Bob's Master Key.
-4. KDC encrypts the Session Key and ticket using Alice's Master Key.
-5. Alice decrypts the response using her Master Key and obtains the Session Key and Bob's encrypted ticket.
-6. Alice encrypts her message using the Session Key.
-7. Alice sends the encrypted message and ticket to Bob.
-8. Bob decrypts the ticket using his Master Key.
-9. Bob obtains the Session Key and decrypts Alice's message.
+1. Alice mengirimkan permintaan Session Key kepada KDC untuk berkomunikasi dengan Bob.
+2. KDC menghasilkan Session Key dan IV secara acak.
+3. KDC membuat ticket yang berisi identitas pengirim, penerima, Session Key, dan IV.
+4. Ticket dienkripsi menggunakan Master Key Bob.
+5. KDC mengenkripsi Session Key dan ticket menggunakan Master Key Alice.
+6. Alice mendekripsi respons KDC menggunakan Master Key miliknya.
+7. Alice memperoleh Session Key dan ticket terenkripsi untuk Bob.
+8. Alice mengenkripsi pesan menggunakan Session Key.
+9. Alice mengirimkan pesan terenkripsi beserta ticket kepada Bob.
+10. Bob mendekripsi ticket menggunakan Master Key miliknya.
+11. Bob memperoleh Session Key dan menggunakannya untuk mendekripsi pesan Alice.
 
-The same process applies when Bob communicates with Alice.
+Proses yang sama berlaku ketika Bob ingin berkomunikasi dengan Alice.
 
-## 6. Project Structure
+## 6. Struktur Direktori Proyek
 
 ```text
 AES-KDC-Project/
@@ -150,54 +152,56 @@ AES-KDC-Project/
 └── README.md
 ```
 
-### File Descriptions
+### Penjelasan File
 
-| File | Description |
+| Nama File | Fungsi |
 |---|---|
-| `aes_manual.py` | Contains the manual AES-128 encryption and decryption implementation, including CBC mode and key expansion. |
-| `kdc.py` | Implements the Key Distribution Center, Session Key generation, and key distribution. |
-| `alice.py` | Implements Alice's client, including Session Key requests, message encryption, and decryption. |
-| `bob.py` | Implements Bob's client, including Session Key requests, message encryption, and decryption. |
-| `README.md` | Provides project documentation and execution instructions. |
+| `aes_manual.py` | Berisi implementasi manual algoritma AES-128, proses enkripsi, dekripsi, mode CBC, dan Key Expansion. |
+| `kdc.py` | Mengimplementasikan Key Distribution Center untuk menghasilkan dan mendistribusikan Session Key. |
+| `alice.py` | Mengimplementasikan program client Alice untuk meminta Session Key, mengenkripsi, dan mendekripsi pesan. |
+| `bob.py` | Mengimplementasikan program client Bob untuk meminta Session Key, mengenkripsi, dan mendekripsi pesan. |
+| `README.md` | Dokumentasi proyek dan panduan penggunaan program. |
 
-## 7. System Requirements
+## 7. Persyaratan Sistem
 
-- Python 3.x
-- Three computers or devices connected to the same network.
-- Network connectivity between Alice, Bob, and KDC.
-- TCP ports 5000, 5001, and 5002 must be accessible.
-- No additional Python packages are required.
+Sebelum menjalankan program, pastikan perangkat memenuhi persyaratan berikut:
 
-## 8. Installation and Configuration
+- Python versi 3.x.
+- Tiga komputer atau perangkat yang terhubung dalam satu jaringan.
+- Koneksi jaringan antara Alice, Bob, dan KDC.
+- Port TCP 5000, 5001, dan 5002 dapat diakses.
+- Tidak memerlukan instalasi library Python tambahan karena menggunakan library bawaan Python.
 
-### Step 1: Prepare the Project
+## 8. Instalasi dan Konfigurasi
 
-Copy all Python files into the project directory on the respective computers.
+### Langkah 1: Persiapan File
 
-### Step 2: Configure IP Addresses
+Salin seluruh file Python ke direktori proyek pada masing-masing komputer.
 
-The practical assignment requires three different IP addresses.
+### Langkah 2: Konfigurasi Alamat IP
 
-Example network configuration:
+Tugas praktikum ini mensyaratkan komunikasi menggunakan tiga alamat IP yang berbeda.
 
-| Device | IP Address | Port |
+Contoh konfigurasi jaringan:
+
+| Perangkat | Alamat IP | Port |
 |---|---|---|
 | KDC | 192.168.1.10 | 5000 |
 | Alice | 192.168.1.11 | 5001 |
 | Bob | 192.168.1.12 | 5002 |
 
-Replace the example IP addresses with the actual IP addresses of your devices.
+Ganti alamat IP contoh tersebut sesuai dengan alamat IP aktual masing-masing perangkat.
 
-### Step 3: Configure Environment Variables
+### Langkah 3: Konfigurasi Environment Variables
 
-**On the KDC computer:**
+**Pada komputer KDC:**
 
 ```powershell
 $env:KDC_HOST="0.0.0.0"
 $env:KDC_PORT="5000"
 ```
 
-**On the Alice computer:**
+**Pada komputer Alice:**
 
 ```powershell
 $env:KDC_HOST="192.168.1.10"
@@ -208,7 +212,7 @@ $env:BOB_HOST="192.168.1.12"
 $env:BOB_PORT="5002"
 ```
 
-**On the Bob computer:**
+**Pada komputer Bob:**
 
 ```powershell
 $env:KDC_HOST="192.168.1.10"
@@ -219,29 +223,29 @@ $env:ALICE_HOST="192.168.1.11"
 $env:ALICE_PORT="5001"
 ```
 
-## 9. Running the Application
+## 9. Menjalankan Program
 
-Start the programs in the following order.
+Jalankan program dengan urutan berikut.
 
-**Terminal 1 – KDC**
+### Terminal 1 – KDC
 
 ```bash
 python kdc.py
 ```
 
-Expected output:
+Output yang diharapkan:
 
 ```text
 [KDC Server Ready] Listening on 0.0.0.0:5000
 ```
 
-**Terminal 2 – Alice**
+### Terminal 2 – Alice
 
 ```bash
 python alice.py
 ```
 
-Expected output:
+Output yang diharapkan:
 
 ```text
 [Alice Ready] Port: 5001
@@ -252,13 +256,13 @@ Expected output:
 3. Keluar
 ```
 
-**Terminal 3 – Bob**
+### Terminal 3 – Bob
 
 ```bash
 python bob.py
 ```
 
-Expected output:
+Output yang diharapkan:
 
 ```text
 [Bob Ready] Port: 5002
@@ -269,42 +273,44 @@ Expected output:
 3. Keluar
 ```
 
-## 10. How to Use
+## 10. Cara Penggunaan Program
 
-### Sending a Message from Alice to Bob
+### 10.1 Mengirim Pesan dari Alice ke Bob
 
-1. Ensure that KDC and Bob are running.
-2. Select option 1 in Alice's terminal.
-3. Enter the message to be sent.
-4. Alice requests a Session Key from KDC.
-5. Alice encrypts the message using AES-128 CBC.
-6. Bob receives the encrypted message and ticket.
-7. Bob decrypts the ticket and retrieves the Session Key.
-8. Bob decrypts and displays the original message.
+1. Pastikan program KDC dan Bob sudah berjalan.
+2. Pilih menu nomor 1 pada terminal Alice.
+3. Masukkan pesan yang ingin dikirim.
+4. Alice meminta Session Key kepada KDC.
+5. Alice mengenkripsi pesan menggunakan AES-128 CBC.
+6. Bob menerima pesan terenkripsi beserta ticket.
+7. Bob mendekripsi ticket menggunakan Master Key miliknya.
+8. Bob memperoleh Session Key.
+9. Bob mendekripsi pesan dan menampilkan plaintext.
 
-### Sending a Message from Bob to Alice
+### 10.2 Mengirim Pesan dari Bob ke Alice
 
-1. Ensure that KDC and Alice are running.
-2. Select option 1 in Bob's terminal.
-3. Enter the message to be sent.
-4. Bob requests a Session Key from KDC.
-5. Bob encrypts the message using AES-128 CBC.
-6. Alice receives the encrypted message and ticket.
-7. Alice decrypts the ticket and retrieves the Session Key.
-8. Alice decrypts and displays the original message.
+1. Pastikan program KDC dan Alice sudah berjalan.
+2. Pilih menu nomor 1 pada terminal Bob.
+3. Masukkan pesan yang ingin dikirim.
+4. Bob meminta Session Key kepada KDC.
+5. Bob mengenkripsi pesan menggunakan AES-128 CBC.
+6. Alice menerima pesan terenkripsi beserta ticket.
+7. Alice mendekripsi ticket menggunakan Master Key miliknya.
+8. Alice memperoleh Session Key.
+9. Alice mendekripsi pesan dan menampilkan plaintext.
 
-## 11. Expected Results
+## 11. Hasil yang Diharapkan
 
-A successful communication should demonstrate:
+Komunikasi dinyatakan berhasil apabila:
 
-- KDC successfully generates a random Session Key.
-- Alice and Bob receive the appropriate encrypted key distribution response.
-- Messages are encrypted before transmission.
-- The recipient successfully decrypts the encrypted ticket.
-- The recipient retrieves the Session Key.
-- The original plaintext message is successfully recovered.
+- KDC berhasil menghasilkan Session Key secara acak.
+- Alice dan Bob memperoleh respons distribusi kunci yang sesuai.
+- Pesan dienkripsi sebelum dikirimkan.
+- Penerima berhasil mendekripsi ticket.
+- Penerima memperoleh Session Key.
+- Pesan asli berhasil diperoleh kembali setelah proses dekripsi.
 
-Example:
+Contoh pengiriman pesan dari Alice:
 
 ```text
 --- MENU ALICE ---
@@ -316,37 +322,40 @@ Hello Bob, this is Alice!
 [TERKIRIM] Ciphertext Hex: ...
 ```
 
-On Bob's terminal:
+Contoh pesan yang diterima Bob:
 
 ```text
 [PESAN MASUK dari Alice]:
 Hello Bob, this is Alice!
 ```
 
-## 12. Important Notes and Limitations
+## 12. Catatan dan Batasan Sistem
 
-- Alice's and Bob's Master Keys must match the corresponding keys configured in KDC.
-- Master Keys must contain exactly 16 ASCII characters for this configuration.
-- The interactive Master Key change option in the current client code only changes the local client variable. It does not automatically update KDC.
-- Ensure that the three devices can communicate over the network and that their firewall settings allow the required TCP connections.
-- This project is intended for educational and practical laboratory purposes.
+Beberapa hal yang perlu diperhatikan:
 
-**Security Note:** The current implementation uses AES-CBC without message authentication. IV reuse across encryption operations and the absence of client authentication mean that this implementation should not be used for production security.
+- Master Key Alice dan Bob harus sesuai dengan Master Key yang tersimpan pada KDC.
+- Master Key harus terdiri dari tepat 16 karakter ASCII untuk konfigurasi ini.
+- Fitur perubahan Master Key pada menu Alice dan Bob saat ini hanya mengubah variabel lokal client. Perubahan tersebut belum otomatis dikirimkan atau diperbarui pada KDC.
+- Pastikan ketiga perangkat dapat saling berkomunikasi melalui jaringan.
+- Pastikan pengaturan firewall mengizinkan koneksi TCP pada port yang digunakan.
+- Program ini dikembangkan untuk kebutuhan pembelajaran dan praktikum kriptografi.
 
-## 13. Conclusion
+**Catatan Keamanan:** Implementasi saat ini menggunakan AES-CBC tanpa autentikasi integritas pesan. Penggunaan IV yang sama pada beberapa operasi enkripsi dan tidak adanya autentikasi client juga menjadi keterbatasan. Oleh karena itu, program ini ditujukan untuk demonstrasi akademik dan bukan untuk penggunaan keamanan produksi.
 
-This project demonstrates the implementation of AES-128 encryption and decryption combined with a Key Distribution Center for symmetric key management.
+## 13. Kesimpulan
 
-Through the communication between Alice, Bob, and KDC, the project illustrates how Master Keys are used to distribute a randomly generated Session Key, allowing two parties to exchange encrypted messages.
+Proyek ini mendemonstrasikan implementasi algoritma AES-128 untuk proses enkripsi dan dekripsi pesan dengan memanfaatkan Key Distribution Center sebagai pengelola distribusi kunci simetris.
 
-The implementation provides practical experience in AES internals, CBC mode, key expansion, network socket programming, and symmetric cryptographic key distribution.
+Melalui komunikasi antara Alice, Bob, dan KDC, proyek ini menunjukkan bagaimana Master Key digunakan untuk melindungi distribusi Session Key yang dihasilkan secara acak sehingga dua pihak dapat bertukar pesan terenkripsi.
+
+Implementasi ini memberikan pemahaman praktis mengenai algoritma AES, mode operasi CBC, Key Expansion, pemrograman jaringan menggunakan Socket TCP, serta mekanisme distribusi kunci dalam kriptografi simetris.
 
 ---
 
-**Course:** Cryptography  
-**Practical Assignment:** AES-128 and Key Distribution Center  
-**Programming Language:** Python 3  
-**Encryption Algorithm:** AES-128  
-**Operation Mode:** CBC  
-**Communication Protocol:** TCP/IP  
-**Main Components:** Alice, Bob, and Key Distribution Center (KDC)
+**Mata Kuliah:** Kriptografi  
+**Tugas:** Implementasi AES-128 dan Key Distribution Center  
+**Bahasa Pemrograman:** Python 3  
+**Algoritma Enkripsi:** AES-128  
+**Mode Operasi:** CBC  
+**Protokol Komunikasi:** TCP/IP  
+**Komponen Utama:** Alice, Bob, dan Key Distribution Center (KDC)
